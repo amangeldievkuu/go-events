@@ -5,7 +5,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
+	"github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func main() {
@@ -14,8 +16,6 @@ func main() {
 	}
 
 	direction := os.Args[1]
-
-	_ = direction
 
 	db, err := sql.Open("sqlite3", "./data.db")
 
@@ -31,5 +31,28 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_ = instance
+	fSrc, err := (&file.File{}).Open("cmd/migrate/migrations")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	m, err := migrate.NewWithInstance("file", fSrc, "sqlite3", instance)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	switch direction {
+	case "up":
+		if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+			log.Fatal(err)
+		}
+	case "down":
+		if err := m.Down(); err != nil && err != migrate.ErrNoChange {
+			log.Fatal(err)
+		}
+
+	default:
+		log.Fatal("Unknown direction. Use up or down")
+	}
+
 }
