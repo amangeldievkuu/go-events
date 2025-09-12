@@ -12,11 +12,11 @@ type EventModel struct {
 
 type Event struct {
 	Id          int    `json:"id"`
-	OwnerId     int    `json:"owner_id" binding:"required"`
+	OwnerId     int    `json:"ownerId" binding:"required"`
 	Title       string `json:"title" binding:"required,min=3"`
 	Description string `json:"description" binding:"required,min=10"`
-	Date        string `json:"date" binding:"required, datetime=2006-01-02"`
-	Location    string `json:"location" binding:"required, min=3"`
+	Date        string `json:"date" binding:"required,datetime=2006-01-02"`
+	Location    string `json:"location" binding:"required,min=3"`
 }
 
 func (m *EventModel) Insert(event *Event) error {
@@ -26,7 +26,7 @@ func (m *EventModel) Insert(event *Event) error {
 
 	query := `
 		INSERT INTO events (owner_id, title, description, date, location) 
-		VALUES (?, ?, ?, ?, ?)`
+		VALUES (?, ?, ?, ?, ?) RETURNING id`
 
 	return m.DB.QueryRowContext(ctx, query, event.OwnerId, event.Title, event.Description, event.Date, event.Location).Scan(&event.Id)
 
