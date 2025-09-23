@@ -21,7 +21,7 @@ func (m *AttendeeModel) Insert(attendee *Attendee) (*Attendee, error) {
 
 	defer cancel()
 
-	query := `INSERT INTO attendees (user_id, event_id) VALUES (?, ?)`
+	query := `INSERT INTO attendees (user_id, event_id) VALUES (?, ?) RETURNING id`
 
 	err := m.DB.QueryRowContext(ctx, query, attendee.UserId, attendee.EventId).Scan(&attendee.Id)
 	if err != nil {
@@ -37,11 +37,11 @@ func (m *AttendeeModel) GetByEventAndAttendee(eventId, userId int) (*Attendee, e
 
 	defer cancel()
 
-	query := `SELECT * FROM attendees where event_id = ? AND user_id = ?`
+	query := `SELECT * FROM attendees WHERE event_id = ? AND user_id = ?`
 
 	var attendee Attendee
 
-	err := m.DB.QueryRowContext(ctx, query, eventId, userId).Scan(&attendee.EventId, &attendee.UserId)
+	err := m.DB.QueryRowContext(ctx, query, eventId, userId).Scan(&attendee.Id, &attendee.EventId, &attendee.UserId)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -51,4 +51,44 @@ func (m *AttendeeModel) GetByEventAndAttendee(eventId, userId int) (*Attendee, e
 	}
 
 	return &attendee, nil
+}
+
+func (m *AttendeeModel) GetAttendeesByEvent(eventId int) ([]*User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	query := `SELECT u.id, u.name, u.email
+	FROM users u
+	JOIN attendees a ON u.id = a.user_id
+	WHERE a.event_id = ?`
+
+	rows, err := m.DB.QueryContext(ctx, query, eventId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	var users []*User
+
+	for rows.Next() {
+		var user User
+
+		err := rows.Scan(&user.Id, &user.Name, &user.Email)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, &user)
+	}
+
+	return users, nil
+}
+
+func (m *AttendeeModel) Delete(userId, eventId int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	query := `DELETE FROM attendees WHERE user_id = ? AND event_id = ?`
+
 }
