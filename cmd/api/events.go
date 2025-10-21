@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -20,8 +19,7 @@ func (app *application) createEvent(c *gin.Context) {
 	err := app.models.Events.Insert(&event)
 
 	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create event"})
 		return
 	}
 
@@ -213,7 +211,7 @@ func (app *application) getEventsByAttendee(c *gin.Context) {
 		return
 	}
 
-	events, err := app.models.Events.GetByAttendee(id)
+	events, err := app.models.Attendees.GetEventByAttendee(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get events"})
 		return
