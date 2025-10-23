@@ -32,7 +32,7 @@ func (m *UserModel) Get(id int) (*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := `SELECT * FROM users WHERE Id = ?`
+	query := `SELECT * FROM users WHERE id = ?`
 
 	var user User
 
