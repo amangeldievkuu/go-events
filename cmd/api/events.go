@@ -30,6 +30,7 @@ func (app *application) getAllEvents(c *gin.Context) {
 	events, err := app.models.Events.GetAll()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve events"})
+		return
 	}
 
 	c.JSON(http.StatusOK, events)
@@ -127,6 +128,7 @@ func (app *application) addAttendeeToEvent(c *gin.Context) {
 
 	if event == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Event not found"})
+		return
 	}
 
 	userToAdd, err := app.models.Users.Get(userId)
@@ -137,8 +139,10 @@ func (app *application) addAttendeeToEvent(c *gin.Context) {
 
 	if userToAdd == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
 	}
 
+	//check if user is already an attendee
 	existingAttendee, err := app.models.Attendees.GetByEventAndAttendee(event.Id, userToAdd.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve attendee"})
@@ -150,11 +154,13 @@ func (app *application) addAttendeeToEvent(c *gin.Context) {
 		return
 	}
 
+	//create new attendee
 	attendee := database.Attendee{
 		EventId: event.Id,
 		UserId:  userToAdd.Id,
 	}
 
+	//insert new attendee
 	_, err = app.models.Attendees.Insert(&attendee)
 
 	if err != nil {
@@ -175,6 +181,11 @@ func (app *application) getEventAttendees(c *gin.Context) {
 	users, err := app.models.Attendees.GetAttendeesByEvent(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve attendees for event"})
+		return
+	}
+
+	if users == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No attendees found for this event"})
 		return
 	}
 
