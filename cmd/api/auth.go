@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/amangeldievkuu/go-rest-events/internal/database"
 	"github.com/gin-gonic/gin"
@@ -44,4 +45,20 @@ func (app *application) registerUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, user)
+}
+
+func (app *application) getUser(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+
+	user, err := app.models.Users.Get(id)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "soemthing went wrong"})
+		return
+	}
+	c.JSON(http.StatusOK, user)
 }
