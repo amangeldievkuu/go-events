@@ -104,10 +104,10 @@ func (m *AttendeeModel) GetEventByAttendee(attendeeId int) ([]*Event, error) {
 
 	defer cancel()
 
-	query := `SELECT e.id, e.owner_id, e.name, e.description, e.date, e.location 
+	query := `SELECT e.id, e.owner_id, e.title, e.description, e.date, e.location 
 	FROM events e
 	JOIN attendees a ON e.id = a.event_id
-	WHERE a.user_id = ? `
+	WHERE a.user_id = ?`
 
 	rows, err := m.DB.QueryContext(ctx, query, attendeeId)
 
