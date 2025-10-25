@@ -4,11 +4,20 @@ import (
 	"database/sql"
 	"log"
 
+	_ "github.com/amangeldievkuu/go-rest-events/docs"
 	"github.com/amangeldievkuu/go-rest-events/internal/database"
 	"github.com/amangeldievkuu/go-rest-events/internal/env"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/mattn/go-sqlite3"
 )
+
+// @title Go REST Events API
+// @version 1.0
+// @description This is a REST API server for managing events.
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" token in the format **Bearer &lt;token&gt;**
 
 type application struct {
 	port      int
